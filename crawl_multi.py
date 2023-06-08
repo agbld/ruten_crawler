@@ -7,11 +7,14 @@ from multiprocessing import Pool
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 from tqdm import tqdm
+from selenium.webdriver.chrome.options import Options
 
 from utils import get_product_info
 
 def worker_function(rows):
-    driver = webdriver.Chrome(ChromeDriverManager().install())
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     product_infos = []
     try:
         for row in rows:
