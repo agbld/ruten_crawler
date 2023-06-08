@@ -4,6 +4,7 @@ import pandas as pd
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
+from tqdm import tqdm
 
 from utils import get_product_info
 
@@ -17,28 +18,34 @@ if __name__ == '__main__':
     product_infos_df = None
 
     driver = webdriver.Chrome(ChromeDriverManager().install())
-
-    for _, row in df.iterrows():    # [:1] for debug
-        cat_url = row['cat_url']
-        sub_cat_url = row['sub_cat_url']
-        product_url = row['item_url']
-        
-        product_info = get_product_info(product_url, driver)
-        product_info['cat_url'] = cat_url
-        product_info['sub_cat_url'] = sub_cat_url
-        product_info['product_url'] = product_url
-        
-        # print(product_info)
-        product_infos_list.append(product_info)
-        
-        if _ % 20 == 0:
-            product_infos_df = pd.DataFrame(product_infos_list)
-            product_infos_df.to_csv('product_infos.csv', index=False)
-            print('saved to product_infos.csv')
+    
+    with tqdm(total=len(df)) as pbar:
+        for _, row in df.iterrows():    # [:1] for debug
+            cat_url = row['cat_url']
+            sub_cat_url = row['sub_cat_url']
+            product_url = row['item_url']
+            
+            try:
+                product_info = get_product_info(product_url, driver)
+            except:
+                print('error: ', product_url)
+                pbar.update(1)
+                continue
+            product_info['cat_url'] = cat_url
+            product_info['sub_cat_url'] = sub_cat_url
+            product_info['product_url'] = product_url
+            
+            # print(product_info)
+            product_infos_list.append(product_info)
+            
+            # if _ % 20 == 0:
+            #     product_infos_df = pd.DataFrame(product_infos_list)
+            #     product_infos_df.to_csv('product_infos.csv', index=False)
+            
+            pbar.update(1)
 
     product_infos_df = pd.DataFrame(product_infos_list)
     product_infos_df.to_csv('product_infos.csv', index=False)
-    print('saved to product_infos.csv')
 
 
 #%%
